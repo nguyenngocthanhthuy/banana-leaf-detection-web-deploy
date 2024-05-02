@@ -1,0 +1,98 @@
+#detection-page {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+
+}
+
+.detect-intro {
+    width: 100%;
+    height: 250px;
+    margin-top: 95px;
+    background-color: rgb(40, 89, 60);
+    display: flex;
+}
+
+.detect-img-div {
+    background-color: black;
+    width: 400px;
+    height: 200px;
+    margin-top: 80px;
+    margin-left: 100px;
+}
+
+.detect-img {
+    width: 400px;
+    height: 200px;
+    margin-top: 30px;
+    margin-left: 50px;
+    padding: 5px;
+    border: 3px solid #8c8a15ce;
+    box-sizing: border-box;
+}
+
+.detect-bar {
+    background-color: rgb(26, 24, 24);
+    width: 800px;
+    height: 150px;
+    margin-left: 400px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding-top: 15px;
+    padding-bottom: 15px;
+    padding-left: 40px;
+    align-self: center;
+    border-radius: 10px;
+}
+
+.form-row {
+    margin-bottom: 20px;
+}
+
+.form-label,
+.form-input {
+    align-self: flex-start;
+}
+
+#detectButton {
+    align-self: center;
+    font-family: sans-serif;
+    font-size: 1.3rem;
+    color: black;
+    font-weight: 600;
+    background: #17cf97;
+    border-radius: 10px;
+    cursor: pointer;
+    border: none;
+    width: 150px;
+    height: 40px;
+}
+
+.form-label,
+input {
+    margin-right: 30px;
+    font-family: sans-serif;
+    font-size: 1.1rem;
+    color: white;
+    font-weight: 600;
+}
+
+#detectButton:hover {
+    background: grey;
+    transition: 0.3s ease;
+}
+
+.canvas-container {
+    margin-top: 100px;
+    width: 50%;
+    align-self: center;
+
+}
+
+.custom-canvas {
+    width: 100%;
+    border: 1px solid black; 
+}
+
+

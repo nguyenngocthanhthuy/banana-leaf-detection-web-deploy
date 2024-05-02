@@ -1,0 +1,29 @@
+FROM python:3.9-slim
+
+# Thiết lập các biến môi trường
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+WORKDIR /detectFolder
+
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    curl \
+    software-properties-common \
+    libsqlite3-dev \
+    gcc \
+    python3-dev \
+    musl-dev \
+    libgl1-mesa-glx
+
+RUN pip install --upgrade pip
+COPY detect_requirements.txt /detectFolder/
+RUN pip install -r detect_requirements.txt
+
+COPY . /detectFolder/
+
+# Mở cổng 8000 để truy cập ứng dụng
+#EXPOSE 8001
+
+#CMD ["sh", "-c", "python3 manage.py runserver"]
+#migrate --no-input && gunicorn detectservice.wsgi:application --bind 0.0.0.0:8001"]

@@ -1,0 +1,17 @@
+FROM node:18-alpine
+
+WORKDIR /frontendFolder
+
+#ENV PATH="./node_modules/.bin:$PATH"
+
+COPY . /frontendFolder/
+
+RUN npm run build
+
+#COPY package.json /frontendFolder/package.json
+#COPY package-lock.json /frontendFolder/package-lock.json
+#RUN npm install -g npm@10.5.2
+#RUN npm install
+
+
+

@@ -1,0 +1,24 @@
+FROM python:3.9-slim
+
+# Thiết lập các biến môi trường
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+WORKDIR /authFolder
+
+# Cài đặt các dependencies của psycopg2
+RUN apt-get update && apt-get install -y \
+    postgresql-server-dev-all gcc python3-dev
+
+# Cài đặt các dependencies của Python
+RUN pip install --upgrade pip
+COPY auth_requirements.txt /authFolder/
+RUN pip install -r auth_requirements.txt
+
+COPY . /authFolder/
+
+#EXPOSE 8000
+
+#CMD ["sh", "-c", "python3 manage.py runserver"]
+#migrate --no-input && gunicorn authservice.wsgi:application --bind 0.0.0.0:8000"]
+
