@@ -30,7 +30,7 @@ const AboutPage = () => {
             <div className='about-banner2'>
               <div className='about-content-div'> 
                 <h3 className='about-title'>WHAT WE DO</h3>
-                <p className='about-content'>Our web application utilizes state-of-the-art algorithms to analyze images of banana leaves and identify various diseases such as fungal infections, bacterial spots, and nutrient deficiencies. Through a user-friendly interface, farmers can easily upload leaf images and receive instant feedback on the health status of their plants.
+                <p className='about-content'>Our web application analyze images of banana leaves and identify various diseases such as fungal infections, bacterial spots, and nutrient deficiencies. Through a user-friendly interface, farmers can easily upload leaf images and receive instant feedback on the health status of their plants.
                 </p>
               </div>
             </div>

@@ -13,13 +13,9 @@ const HomePage = () => {
       <NavBar />
 
       <div className='home-image'>
-        <div className='home-title-div'>
-          <h3 className='home-title'>Welcome to Banana Leaves Diseases Object Detection Website</h3>
-          <p className='home-title'>We are working to create a powerful platform for detecting diseases on banana leaves using computer vision technology.</p>
-        </div>
-        <div className='readmore-btn-div'>
-          <Link to='/about' className='link-btn'>READ MORE</Link>
-        </div>
+        <h3 className='home-title'>Welcome to Banana Leaves Diseases Object Detection Website</h3>
+        <p className='home-title'>We are working to create a powerful platform for detecting diseases on banana leaves using computer vision technology.</p>
+        <Link to='/about' className='link-btn'>READ MORE</Link>
       </div>
   
       <div className='intro'> 
@@ -41,12 +37,12 @@ const HomePage = () => {
               <p className='feature-title'>Cutting-Edge Object Detection</p>
             </div>
             <div className='one-part'>
-              <img alt='feature1' src={FEATURE2} className='feature-img'></img>
+              <img alt='feature2' src={FEATURE2} className='feature-img'></img>
               <p className='feature-title'>Easy-to-Use Interface</p>
             </div>
             <div className='one-part'>
-              <img alt='feature1' src={FEATURE3} className='feature-img'></img>
-              <p className='feature-title'>Empowering Plant Health Management</p>
+              <img alt='feature3' src={FEATURE3} className='feature-img'></img>
+              <p className='feature-title'>Empowering Plant Health</p>
             </div>
           </div>
       </div>

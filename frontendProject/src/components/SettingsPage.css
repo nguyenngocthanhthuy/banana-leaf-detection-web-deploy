@@ -8,39 +8,40 @@
 
 .settings-top-part  {
     width: 100%;
-    height: 300px;
-    margin-top: 95px;
+    height: 50vh;
     background-color: rgb(234, 227, 227);
 }
 
 .settings-container-part {
     width: 60%;
     height: 100vh;
-    margin-top: -250px;
+    margin-top: -15%;
+    display: flex;
+    flex-direction: column;
     
 }
 
 .settings-content-part {
    width: 100%;
-   height: 100vh;
+   height: auto;
    background-color: #2c2f2e;
    border-radius: 20px;
    display: flex;
-   padding: 20px;
+   padding: 3%;
    
 }
 
 h3.settings-header {
-    font-size: 2.5rem;
+    font-size: 2rem;
     font-family: sans-serif;
     color: #17cf97;
     letter-spacing: 1px;
     font-weight: 1000;
-    margin-bottom: -10px;
+    margin-bottom: -2%; 
 }
 
 p.settings-header {
-    font-size: 1.3rem;
+    font-size: 1.1rem;
     font-family: sans-serif;
     color: rgb(77, 76, 76);
     font-weight: 1000;
@@ -63,10 +64,10 @@ p.settings-header {
 
 .upload-btn-div {
     width: 100%;
-    height: 10%;
+    height: 8%;
     display: flex;
     justify-content: center;
-    align-items: flex-start;
+    align-items: center;
 }
 
 .upload-pic {
@@ -76,13 +77,13 @@ p.settings-header {
 }
 
 .upload-btn{
-    width: 200px;
-    height: 50px;
+    width: 70%;
+    height: 100%;
     background: #17cf97;
     color: white;
     font-family: sans-serif;
     border-radius: 30px;
-    font-size: 1.1rem;
+    font-size: 1rem;
     font-weight: 700;
     cursor: pointer;
     text-decoration: none;
@@ -96,13 +97,14 @@ p.settings-header {
 
 .settings-form-div {
     flex: 2;
-    padding-top: 50px;
+    padding-top: 5%;
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
     align-items: center;
     background-color: #17cf97;
     border-radius: 20px;
+    padding-bottom: 5%;
 }
 
 .settings-input {
@@ -115,8 +117,8 @@ p.settings-header {
 
 .settings-form-input {
     width: 100%;
-    height: 60px;
-    font-size: 1.3rem;
+    height: 7vh;
+    font-size: 1.1rem;
     border-radius: 10px;
     background: white;
     color: black;
@@ -127,7 +129,7 @@ p.settings-header {
 }
 
 .settings-label {
-    margin: 10px 0;
+    margin: 3% 0;
     font-family: sans-serif;
     font-size: 1.1rem;
     color: black;
@@ -137,16 +139,18 @@ p.settings-header {
 }
 
 .settings-btn-div {
+    width: 100%;
+    height: 100%;
     display: flex;
     justify-content: center;
     align-items: center;
-    margin-top: 20px;
+    margin-top: 3%;
 }
 
 .settings-btn {
-    margin: 0 20px;
-    width: 200px;
-    height: 50px;
+    margin: 0 10%;
+    width: 50%;
+    height: 150%;
     background: black;
     color: white;
     font-family: sans-serif;

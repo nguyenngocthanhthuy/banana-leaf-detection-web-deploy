@@ -64,7 +64,7 @@ const LoginPage = () => {
             <img alt='' src={LOGIN} className='login-img'></img>
             <div className='login-notice'>
               <p>Don't have an account !</p>
-              <Link to='/signup' className='signup-link-btn'>Sign Up</Link>
+              <Link to='/signup' className='login-link-btn'>Sign Up</Link>
             </div>
           </div> 
 
@@ -95,7 +95,7 @@ const LoginPage = () => {
               </div>
 
               <div className='login-submit-div'>
-                <button type='submit' className='signup-submit-btn'>Login</button>
+                <button type='submit' className='login-submit-btn'>Login</button>
               </div>
             </form>
           </div>

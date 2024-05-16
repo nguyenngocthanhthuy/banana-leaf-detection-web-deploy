@@ -4,11 +4,10 @@
 
 .home-image {
     width: 100%;
-    height: 800px;
+    height: 100vh;
     background-image: linear-gradient(rgba(68, 111, 89, 0.3), rgba(3, 29, 7, 0.7)), url(./images/home-image.jpg);
     background-size: cover;
     background-position: center;
-    margin-top: 95px;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -22,25 +21,21 @@
 }
 
 h3.home-title{
-    font-size: 2.1rem;
+    font-size: 2rem;
     letter-spacing: 1px;
     text-align: center;
+    margin-bottom: 0;
 }
 
 p.home-title {
-    font-size: 1.2rem;
+    font-size: 1.1rem;
     line-height: 28px;
-    margin-top: -20px;
     text-align: center;
-}
-
-.readmore-btn-div {
-    margin-top: 13px;
 }
 
 .link-btn {
     text-decoration: none;
-    font-size: 1.3rem;
+    font-size: 1.1rem;
     color: white;
     background-color: #17cf97;
     font-weight: 700;
@@ -56,7 +51,7 @@ p.home-title {
 
 .intro {
     width: 100%;
-    height: 500px;
+    height: 60vh;
     background-color: black;
     display: flex;
     align-items: center;
@@ -64,17 +59,19 @@ p.home-title {
 }
 
 .intro-img-div {
+    width: 50%;
+    height: 100%;
     display: flex;
     justify-content: flex-start;
     align-items: center;
     flex:1 ;
-    padding-left: 80px;
+    padding-left: 2%;
     
 }
 
 .intro-img {
-    width: 400px;
-    height: 400px;
+    width: 70%;
+    height: 70%;
     border-radius: 5px;
 }
 
@@ -87,19 +84,19 @@ p.home-title {
     flex-direction: column;
     justify-content: flex-start;
     align-items: flex-end;
-    padding-right: 80px;
+    padding-right: 2%;
 }
  
 h3.intro-title,
 p.intro-title {
-    width: 400px;
+    width: 70%;
     font-family: sans-serif;
     letter-spacing: 2px;
 }
 
 h3.intro-title {
     color: #17cf97;
-    font-size: 1.7 rem;
+    font-size: 1.5 rem;
     font-weight: 600;
     line-height: 25px;
 }
@@ -107,11 +104,12 @@ h3.intro-title {
 p.intro-title {
    text-align: justify;
    line-height: 20px;
+   font-size: 1.1 rem;
 }
 
 .feature {
     width: 100%;
-    height: 500px;
+    height: 80vh;
     background-color: white;
     display: flex;
     justify-content: center;
@@ -123,8 +121,6 @@ p.intro-title {
     height: 80%;
     background-color: #042315;
     display: flex;
-    justify-content: space-around;
-    align-items: center;
     border-radius: 10px;
 }
 
@@ -138,8 +134,8 @@ p.intro-title {
 }
 
 .feature-img {
-    width: 250px;
-    height: 250px;
+    width: 60%;
+    height: 60%;
     border-radius: 10px;
 }
 
@@ -154,7 +150,7 @@ p.feature-title {
 
 .footer {
     width: 100%;
-    height: 250px;
+    height: 50vh;
     background-color: black;
     display: flex;
     flex-direction: column;
@@ -169,8 +165,8 @@ p.feature-title {
 }
 
 .socials li {
-    margin-left: 20px;
-    margin-right: 20px;
+    margin-left: 5%;
+    margin-right: 5%;
     text-decoration: none;
     list-style-type: none;
     color: white;
@@ -179,7 +175,7 @@ p.feature-title {
 .socials li i {
     list-style-type: none;
     color: grey;
-    font-size: 3rem;
+    font-size: 2rem;
 }
 
 .footer-title {
@@ -196,7 +192,8 @@ p.feature-title {
     color: grey;
     font-size: 1rem;
     font-family: sans-serif;
-    font-weight: 600;
+    font-weight: 400;
     letter-spacing: 1;
+    text-align: center;
 }
 
