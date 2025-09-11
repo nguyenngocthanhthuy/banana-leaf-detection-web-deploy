@@ -1,4 +1,4 @@
 # SYSTEM ARCHITECTURE
 
-![System Architecture](System Architecture.png)
+![System Architecture](SystemArchitecture.png)
 
