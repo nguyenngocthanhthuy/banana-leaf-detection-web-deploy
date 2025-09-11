@@ -1,0 +1,107 @@
+#!/bin/bash
+
+cd /
+
+# Create a log file and give appropriate permissions
+sudo touch /var/log/userdata.log
+sudo chmod 666 /var/log/userdata.log
+
+# Log file location
+LOG_FILE="/var/log/userdata.log"
+
+# Update package manager
+echo "Updating package manager..." | sudo tee -a $LOG_FILE
+sudo apt update -y 
+sudo apt upgrade -y
+
+# Install git, docker
+echo "Installing git and Docker..." | sudo tee -a $LOG_FILE
+sudo apt install -y git 
+sudo apt install -y docker.io 
+sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose 
+sudo chmod +x /usr/local/bin/docker-compose 
+
+# Clone git repository
+echo "Cloning git repository..." | sudo tee -a $LOG_FILE
+sudo git clone https://nguyenngocthanhthuy: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@github.com/nguyenngocthanhthuy/detection-web-deploy.git 
+
+# Install Java
+echo "Installing Java..." | sudo tee -a $LOG_FILE
+sudo apt install -y default-jdk 
+
+# Install Jenkins
+echo "Installing Jenkins..." | sudo tee -a $LOG_FILE
+sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5BA31D57EF5975CA
+sudo wget -q -O - https://pkg.jenkins.io/debian-stable/jenkins.io.key | sudo apt-key add - 
+sudo sh -c 'echo deb https://pkg.jenkins.io/debian-stable binary/ > /etc/apt/sources.list.d/jenkins.list' 
+sudo apt update -y 
+sudo apt install -y jenkins | sudo tee -a $LOG_FILE
+
+# Start Jenkins service
+echo "Starting Jenkins service..." | sudo tee -a $LOG_FILE
+sudo systemctl enable jenkins 
+sudo systemctl start jenkins 
+
+# Download Jenkins CLI jar
+echo "Downloading Jenkins CLI jar..." | sudo tee -a $LOG_FILE
+sudo wget http://localhost:8080/jnlpJars/jenkins-cli.jar 
+
+# Allow Jenkins to interact with Docker
+# jenkins ALL=(ALL) NOPASSWD: /usr/bin/docker | sudo tee -a /etc/sudoers
+echo "jenkins ALL=(ALL) NOPASSWD: ALL" | sudo tee -a /etc/sudoers
+sudo usermod -aG docker jenkins
+sudo systemctl restart jenkins
+
+# Create and edit config.groovy
+echo "Creating and editing config.groovy..." | sudo tee -a $LOG_FILE
+sudo bash -c 'cat <<EOF > /config.groovy
+import jenkins.model.*
+import hudson.security.*
+
+def instance = Jenkins.getInstance()
+def hudsonRealm = new HudsonPrivateSecurityRealm(false)
+hudsonRealm.createAccount("twee", "twee2801")
+instance.setSecurityRealm(hudsonRealm)
+def strategy = new FullControlOnceLoggedInAuthorizationStrategy()
+strategy.setAllowAnonymousRead(true)
+instance.setAuthorizationStrategy(strategy)
+instance.save()
+
+EOF'
+
+# Run the Groovy script using Jenkins CLI
+echo "Running Jenkins CLI with config.groovy..." | sudo tee -a $LOG_FILE
+INITIAL_PASSWORD=$(sudo cat /var/lib/jenkins/secrets/initialAdminPassword | awk '{$1=$1};1')
+java -jar jenkins-cli.jar -s http://localhost:8080 -auth admin:$INITIAL_PASSWORD -http groovy = < /config.groovy 
+
+# Install jenkins plugins and restart jenkins plugins
+echo "Installing jenkins plugins and restarting jenkins..." | sudo tee -a $LOG_FILE
+java -jar /jenkins-cli.jar -s http://localhost:8080/ -auth twee:twee2801 install-plugin $(cat /detection-web-deploy/plugins.txt)
+java -jar /jenkins-cli.jar -s http://localhost:8080/ -auth twee:twee2801 safe-restart
+sudo systemctl restart jenkins
+
+# Create a new job using Jenkins CLI
+echo "Creating a new Jenkins job..." | sudo tee -a $LOG_FILE
+java -jar /jenkins-cli.jar -auth twee:twee2801 -s http://localhost:8080 create-job twee-web-deploy < /detection-web-deploy/jenkins-pipeline.xml 
+
+# Build the job
+echo "Building the job..." | sudo tee -a $LOG_FILE
+java -jar /jenkins-cli.jar -auth twee:twee2801 -s http://localhost:8080 build twee-web-deploy 
+
+# Run docker-compose containers
+echo "Running docker-compose containers ..." | sudo tee -a $LOG_FILE
+cd /detection-web-deploy
+sudo docker-compose up | sudo tee -a $LOG_FILE
+ 
+
+psql -h twee-db.cdo5ekpqvfku.us-east-1.rds.amazonaws.com -U tweetwee -d postgres
+
+\dt
+\l
+
+java -jar /jenkins-cli.jar -s http://localhost:8080 -auth twee:twee2801 create-job myproject < /jobconfig.xml
+
+sudo bash -c 'cat <EOF > /test.txt
+hello
+EOF'
+

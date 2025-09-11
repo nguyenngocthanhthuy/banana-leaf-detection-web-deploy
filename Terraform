@@ -1,0 +1,254 @@
+provider "aws" {
+  region = "us-east-1"
+}
+
+# TẠO TEMPLATE CHO CÁC EC2 INSTANCES TRONG TARGET GROUP
+resource "aws_launch_template" "example" {
+    name_prefix   = "myautomatedtemplate"  # Đặt tên cho Launch Template
+
+    # Cấu hình khởi chạy instance EC2 trong Launch Template
+    block_device_mappings {
+        device_name = "/dev/sda1"
+        ebs {
+        volume_size = 60
+        volume_type = "gp2"
+        }
+    }
+
+    network_interfaces {
+        device_index         = 0 # Chỉ số của network interface đầu tiên
+        #subnet_id            = "" Thay thế bằng ID subnet mà instance sẽ được khởi chạy
+        associate_public_ip_address  = true # Cho phép public IP
+        security_groups      = ["sg-01b7ce392d1c3398f"]  # ID của security group launch-wizard-1
+    }
+
+    # Cấu hình AMI và instance type
+    image_id      = "ami-04b70fa74e45c3917"  # Thay thế bằng ID AMI mà bạn muốn sử dụng
+    instance_type = "t2.medium"
+
+    # Cấu hình key pair và tags
+    key_name = "tweewebkp"  # Tên của key pair để SSH vào instance (tuỳ chọn)
+
+    # Cấu hình userdata
+    user_data = base64encode(<<-EOF
+        #!/bin/bash
+        cd /
+        sudo touch /var/log/userdata.log
+        sudo chmod 666 /var/log/userdata.log
+        LOG_FILE="/var/log/userdata.log"
+
+        echo "Updating package manager..." | sudo tee -a $LOG_FILE
+        sudo apt update -y 
+        sudo apt upgrade -y
+
+        echo "Installing git and Docker..." | sudo tee -a $LOG_FILE
+        sudo apt install -y git 
+        sudo apt install -y docker.io 
+        sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose 
+        sudo chmod +x /usr/local/bin/docker-compose 
+    
+        echo "Installing Java..." | sudo tee -a $LOG_FILE
+        sudo apt install -y default-jdk 
+
+        echo "Installing Jenkins..." | sudo tee -a $LOG_FILE
+        sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5BA31D57EF5975CA
+        sudo wget -q -O - https://pkg.jenkins.io/debian-stable/jenkins.io.key | sudo apt-key add - 
+        sudo sh -c 'echo deb https://pkg.jenkins.io/debian-stable binary/ > /etc/apt/sources.list.d/jenkins.list' 
+        sudo apt update -y 
+        sudo apt install -y jenkins
+
+        echo "Enabling Jenkins ..." | sudo tee -a $LOG_FILE
+        sudo systemctl enable jenkins 
+        echo "jenkins ALL=(ALL) NOPASSWD: ALL" | sudo tee -a /etc/sudoers
+        sudo usermod -aG docker jenkins
+        sudo systemctl start jenkins
+
+        echo "Downloading Jenkins CLI ..." | sudo tee -a $LOG_FILE
+        sudo wget http://localhost:8080/jnlpJars/jenkins-cli.jar 
+
+        echo "Creating new user in Jenkins ... " | sudo tee -a $LOG_FILE
+        INITIAL_PASSWORD=$(sudo cat /var/lib/jenkins/secrets/initialAdminPassword | awk '{$1=$1};1')
+
+        sudo bash -c 'cat <<EOF > /config.groovy
+        import jenkins.model.*
+        import hudson.security.*
+        def instance = Jenkins.getInstance()
+        def hudsonRealm = new HudsonPrivateSecurityRealm(false)
+        hudsonRealm.createAccount("twee", "twee2801")
+        instance.setSecurityRealm(hudsonRealm)
+        def strategy = new FullControlOnceLoggedInAuthorizationStrategy()
+        strategy.setAllowAnonymousRead(true)
+        instance.setAuthorizationStrategy(strategy)
+        instance.save()
+        EOF'
+
+        java -jar /jenkins-cli.jar -s http://localhost:8080 -auth admin:$INITIAL_PASSWORD -http groovy = < /config.groovy 
+
+        echo "Installing jenkins plugins and restarting jenkins..." | sudo tee -a $LOG_FILE
+
+        sudo bash -c 'cat <<EOF > /plugins.txt
+        workflow-job
+        workflow-cps
+        workflow-aggregator
+        ssh-agent
+        docker-plugin
+        docker-workflow
+        credentials-binding
+        git
+        amazon-ecr
+        cloudbees-folder
+        workflow-cps-global-lib
+        github
+        github-branch-source
+        pipeline-utility-steps
+        EOF'
+
+        java -jar /jenkins-cli.jar -s http://localhost:8080/ -auth twee:twee2801 install-plugin $(cat /plugins.txt)
+
+        java -jar /jenkins-cli.jar -s http://localhost:8080/ -auth twee:twee2801 safe-restart
+
+        sudo systemctl restart jenkins
+
+        echo "Creating the credential..." | sudo tee -a $LOG_FILE
+
+        sudo bash -c 'cat <<EOF > /credentialconfig.xml
+        <com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl>
+        <scope>GLOBAL</scope>
+        <id>mygitcredential</id>
+        <description>Credentials for GitHub</description>
+        <username>nguyenngocthanhthuy</username>
+        <password>7121971Mother/</password>
+        </com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl>
+        EOF'
+
+        java -jar /jenkins-cli.jar -s http://localhost:8080/ -auth twee:twee2801 create-credentials-by-xml "SystemCredentialsProvider::SystemContextResolver::jenkins" "" < /credentialconfig.xml
+
+        echo "Creating the job..." | sudo tee -a $LOG_FILE
+        
+        sudo bash -c 'cat <<EOF > /jobconfig.xml
+        <?xml version="1.1" encoding="UTF-8"?>
+        <flow-definition plugin="workflow-job@1400.v7fd111b_ec82f">
+            <description></description>
+            <keepDependencies>false</keepDependencies>
+            <properties>
+                <org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
+                <triggers>
+                    <com.cloudbees.jenkins.GitHubPushTrigger plugin="github@1.39.0">
+                        <spec></spec>
+                    </com.cloudbees.jenkins.GitHubPushTrigger>
+                </triggers>
+                </org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
+            </properties>
+            <definition class="org.jenkinsci.plugins.workflow.cps.CpsScmFlowDefinition" plugin="workflow-cps@3894.3896.vca_2c931e7935">
+                <scm class="hudson.plugins.git.GitSCM" plugin="git@5.2.2">
+                    <configVersion>2</configVersion>
+                    <userRemoteConfigs>
+                        <hudson.plugins.git.UserRemoteConfig>
+                            <url>https://nguyenngocthanhthuy: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@github.com/nguyenngocthanhthuy/detection-web-deploy.git</url>
+                            <credentialsId>mygitcredential</credentialsId>
+                        </hudson.plugins.git.UserRemoteConfig>
+                    </userRemoteConfigs>
+                    <branches>
+                        <hudson.plugins.git.BranchSpec>
+                            <name>*/main</name>
+                        </hudson.plugins.git.BranchSpec>
+                    </branches>
+                    <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
+                    <submoduleCfg class="empty-list"/>
+                    <extensions/>
+                </scm>
+                <scriptPath>Jenkinsfile</scriptPath>
+                <lightweight>true</lightweight>
+            </definition>
+            <triggers/>
+            <disabled>false</disabled>
+        </flow-definition>
+        EOF'
+
+        java -jar /jenkins-cli.jar -s http://localhost:8080 -auth twee:twee2801 create-job myproject < /jobconfig.xml
+
+        echo "Building the job..." | sudo tee -a $LOG_FILE
+        java -jar jenkins-cli.jar -auth twee:twee2801 -s http://localhost:8080 build myproject 
+
+    EOF
+    )
+
+    tag_specifications {
+        resource_type = "instance"
+        tags = {
+            Name = "mywebserver"
+        }
+    }
+}
+
+# TẠO TARGET GROUP
+resource "aws_lb_target_group" "example" {
+    name     = "mytargetgroup"
+    port     = 80
+    protocol = "TCP"
+    vpc_id   = "vpc-0afcfd9fba5b69896"  # ID của VPC mà Target Group sẽ được tạo trong đó
+
+    target_type         = "instance"  # Loại target là instance
+
+    health_check {
+        protocol = "HTTP"    # Protocol sức khỏe là HTTP
+        path     = "/"       # Đường dẫn sức khỏe là "/"
+        port     = "80"
+        healthy_threshold = 5
+        unhealthy_threshold = 2
+        timeout = 5
+        interval = 30        #  unhealthy_THRESHOLD have
+  }
+}
+
+# TẠO NETWORK LOAD BALANCER
+resource "aws_lb" "example" {
+  name               = "mynlb"
+  internal           = false
+  load_balancer_type = "network"
+  subnets            = ["subnet-013a5ceb21faea208", "subnet-0e429c0fea318ff1c", "subnet-06c46914bc2994996", "subnet-08488781cd5f9eb02", "subnet-06aaac5d281552752", "subnet-051003b157c5bdbdc"]  
+  enable_deletion_protection = false
+  security_groups    = ["sg-01b7ce392d1c3398f"]
+
+  tags = {
+    Name = "my-nlb"
+  }
+}
+
+# TẠO LISTENER CHO NETWORK LOAD BALANCER
+resource "aws_lb_listener" "example" {
+  load_balancer_arn = aws_lb.example.arn
+  port              = 80
+  protocol          = "TCP"
+
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.example.arn
+  }
+}
+
+# TẠO AUTO SCALING GROUP
+resource "aws_autoscaling_group" "example" {
+  name                 = "myasg"
+  desired_capacity     = 2
+  max_size             = 2
+  min_size             = 0
+  vpc_zone_identifier  = ["subnet-013a5ceb21faea208", "subnet-0e429c0fea318ff1c", "subnet-06c46914bc2994996", "subnet-08488781cd5f9eb02", "subnet-06aaac5d281552752", "subnet-051003b157c5bdbdc"]  # Danh sách các subnet ID trong VPC
+
+  launch_template {
+    id      = aws_launch_template.example.id
+    version = "$Latest"
+  }
+
+  target_group_arns = [aws_lb_target_group.example.arn]  # ARN của các target group của Load Balancer
+
+  tag {
+    key                 = "Name"
+    value               = "myasginstance"
+    propagate_at_launch = true
+  }
+}
+
+
+
+

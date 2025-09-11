@@ -1,0 +1,37 @@
+pipeline {
+    agent any
+    
+    environment {
+        DOCKER_HOST = 'tcp://docker:2375/'
+        DOCKER_DRIVER = 'overlay2'
+        REPO_URL = 'https://github.com/nguyenngocthanhthuy/detection-web-deploy.git'
+        EC2_USER = 'ubuntu'
+        KEY_PATH = 'tweewebkp.pem'
+    }
+    
+    stages {
+        stage('Deploy') {
+            steps {
+                script {                    
+                    // Get instance IDs
+                    def instanceIds = sh(script: 'aws ec2 describe-instances --filters "Name=tag:Role,Values=web-server" --query "Reservations[*].Instances[*].InstanceId" --output text', returnStdout: true).trim().split('\n')
+                    
+                    // Iterate over instance IDs
+                    for (String instanceId in instanceIds) {
+                        // Get instance public IP address
+                        def ipAddress = sh(script: 'aws ec2 describe-instances --instance-ids ' + instanceId + ' --query "Reservations[*].Instances[*].PublicIpAddress" --output text', returnStdout: true).trim()
+                        
+                        // SSH into the instance and execute deployment commands
+                        sshagent(['tweewebkp']) {
+                            sh "ssh -o StrictHostKeyChecking=no -i ${KEY_PATH} ${EC2_USER}@${ipAddress} 'cd /home/ubuntu && if [ -d detection-web-deploy ]; then cd detection-web-deploy && git pull origin main; else git clone ${REPO_URL}; cd detection-web-deploy; fi'"
+                            sh "ssh -o StrictHostKeyChecking=no -i ${KEY_PATH} ${EC2_USER}@${ipAddress} 'sudo docker-compose -f /home/ubuntu/detection-web-deploy/docker-compose.yml down'"
+                            sh "ssh -o StrictHostKeyChecking=no -i ${KEY_PATH} ${EC2_USER}@${ipAddress} 'sudo docker-compose -f /home/ubuntu/detection-web-deploy/docker-compose.yml rm -f'"
+                            sh "ssh -o StrictHostKeyChecking=no -i ${KEY_PATH} ${EC2_USER}@${ipAddress} 'sudo docker-compose -f /home/ubuntu/detection-web-deploy/docker-compose.yml build --no-cache'"
+                            sh "ssh -o StrictHostKeyChecking=no -i ${KEY_PATH} ${EC2_USER}@${ipAddress} 'sudo docker-compose -f /home/ubuntu/detection-web-deploy/docker-compose.yml up -d'"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
